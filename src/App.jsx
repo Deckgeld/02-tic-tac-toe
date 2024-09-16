@@ -7,14 +7,25 @@ import { Square } from './components/Square'
 import { TURNS } from './constants'
 import { checkWinner, checkEndGame } from './logic/board'
 import { WinnerModal } from './components/WinnerModal'
+import { saveGameToStorage, resetGameStorage } from "./logic/storage";
 
 function App() {
   //Arreglo de 9 elementos con valores nulos
   //fill es un metodo que llena un arreglo con un valor
-  const [board, setBoard] = useState(Array(9).fill(null));
+  const [board, setBoard] = useState(() => {
+    const boardFromStorage = window.localStorage.getItem('board');
+
+    return boardFromStorage 
+      ? JSON.parse(boardFromStorage) 
+      : Array(9).fill(null);
+  });
 
   //Estado para saber de quien es el turno, por defecto es x
-  const [turn, setTurn] = useState(TURNS.X);
+  const [turn, setTurn] = useState(() => {
+    const turnFromStorage = window.localStorage.getItem('turn');
+
+    return turnFromStorage ?? TURNS.X;
+  });
 
   //null es que no hay ganador, true es que hay un ganador, false es que es un empate
   const [winner, setWinner] = useState(null);
@@ -25,6 +36,8 @@ function App() {
     setBoard(Array(9).fill(null));
     setTurn(TURNS.X);
     setWinner(null);
+
+    resetGameStorage();
   }
 
   const updateBoard = (index) => {
@@ -42,6 +55,8 @@ function App() {
     //Cambiar de turno
     const newTurn = turn === TURNS.X ? TURNS.O : TURNS.X;
     setTurn(newTurn);
+
+    saveGameToStorage({ board: newBoard, turn: newTurn });
 
     //Revisar si hay un ganador
     const newWinner = checkWinner(newBoard);
