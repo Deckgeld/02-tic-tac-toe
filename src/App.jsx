@@ -3,42 +3,10 @@ import { useState } from "react";
 import "./App.css";
 import confetti from "canvas-confetti";
 
-const TURNS = {
-  X: "x",
-  O: "o",
-};
-
-// Sqere es un componente para renderizar el contenido de cada celda
-// children es el contenido que se va a renderizar
-// updateBoard es una funcion que se va a ejecutar al hacer click en la celda
-// index es la posicion de la celda en el tablero
-const Square = ({ children, isSelected, updateBoard, index }) => {
-  const className = `square ${isSelected ? "is-selected" : ""}`;
-
-  const handleClick = () => {
-    updateBoard(index);
-  };
-
-  return (
-    <div className={className} onClick={handleClick}>
-      {children}
-    </div>
-  );
-};
-
-const WINNER_COMBOS = [
-  //Horizontal
-  [0, 1, 2],
-  [3, 4, 5],
-  [6, 7, 8],
-  //Vertical
-  [0, 3, 6],
-  [1, 4, 7],
-  [2, 5, 8],
-  //Diagonal
-  [0, 4, 8],
-  [2, 4, 6],
-];
+import { Square } from './components/Square'
+import { TURNS } from './constants'
+import { checkWinner, checkEndGame } from './logic/board'
+import { WinnerModal } from './components/WinnerModal'
 
 function App() {
   //Arreglo de 9 elementos con valores nulos
@@ -51,32 +19,12 @@ function App() {
   //null es que no hay ganador, true es que hay un ganador, false es que es un empate
   const [winner, setWinner] = useState(null);
 
-  const checkWinner = (boardToCheck) => {
-    for (const combo of WINNER_COMBOS) {
-      const [a, b, c] = combo;
-      //Si las 3 celdas son iguales y no son nulas
-      if (
-        boardToCheck[a] &&
-        boardToCheck[a] === boardToCheck[b] &&
-        boardToCheck[a] === boardToCheck[c]
-      ) {
-        return boardToCheck[a];
-      }
-    }
-    return null;
-  };
+  
 
   const resetGame = () => {
     setBoard(Array(9).fill(null));
     setTurn(TURNS.X);
     setWinner(null);
-  }
-
-  const checkEndGame = (newBoard) => {
-    //Si todas las celdas estan llenas, se acaba el juego y es un empate
-    //every es un metodo que recorre un arreglo y retorna un booleano
-    return newBoard.every((square) => square !== null)
-
   }
 
   const updateBoard = (index) => {
@@ -132,23 +80,7 @@ function App() {
         <Square isSelected={turn === TURNS.O}>{TURNS.O}</Square>
       </section>
 
-      {
-        winner !== null && (
-          <section className="winner">
-            <div className="text">
-              <h2>{winner === false ? "Empate" : "Gano"}</h2>
-
-              <header className="win">
-                {winner && <Square>{winner}</Square>}
-              </header>
-
-              <footer>
-                <button onClick={resetGame}>Empezar de nuevo</button>
-              </footer>
-            </div>
-          </section>
-        )
-      }
+      <WinnerModal winner={winner} resetGame={resetGame} />
     </main>
   );
 }
